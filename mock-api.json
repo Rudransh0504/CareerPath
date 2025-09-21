@@ -1,0 +1,84 @@
+{
+  "user": {
+    "name": "Jai",
+    "careerGoal": "AI Engineer"
+  },
+  "skills": [
+    {
+      "name": "Python",
+      "level": 85
+    },
+    {
+      "name": "Machine Learning",
+      "level": 70
+    },
+    {
+      "name": "Data Analysis",
+      "level": 65
+    },
+    {
+      "name": "Cloud Computing",
+      "level": 50
+    },
+    {
+      "name": "IoT",
+      "level": 78
+    }
+  ],
+  "careerMatches": [
+    {
+      "role": "Data Scientist",
+      "match": 85,
+      "roadmap": [
+        "Learn Python and statistics",
+        "Master data visualization",
+        "Study machine learning algorithms",
+        "Build portfolio projects"
+      ]
+    },
+    {
+      "role": "Frontend Developer",
+      "match": 78,
+      "roadmap": [
+        "Learn HTML, CSS, JavaScript",
+        "Master React or Angular",
+        "Understand web accessibility",
+        "Build responsive web apps"
+      ]
+    },
+    {
+      "role": "Cloud Engineer",
+      "match": 70,
+      "roadmap": [
+        "Learn cloud fundamentals (AWS, Azure, GCP)",
+        "Understand networking and security",
+        "Get certified (e.g., AWS Solutions Architect)",
+        "Deploy scalable applications"
+      ]
+    },
+    {
+      "role": "AI Product Manager",
+      "match": 65,
+      "roadmap": [
+        "Understand AI/ML basics",
+        "Learn product management frameworks",
+        "Work with cross-functional teams",
+        "Launch an AI-driven product"
+      ]
+    }
+  ],
+  "badges": [
+    {
+      "title": "AI Explorer",
+      "icon": "assets/ai-badge.svg"
+    },
+    {
+      "title": "Skill Master",
+      "icon": "assets/skill-badge.svg"
+    },
+    {
+      "title": "Cloud Starter",
+      "icon": "assets/cloud-badge.svg"
+    }
+  ]
+}

@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CareerPath AI — Dashboard</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Fonts and Colors */
+    :root{
+      --bg1: #6b2bd6;
+      --bg2: #2ed7e6;
+      --glassLight: rgba(255,255,255,0.7);
+      --glassDark: rgba(10,10,20,0.5);
+      --textLight: #0b1020;
+      --textDark: #e8eef8;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;}
+    body{
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+      color:var(--textDark);
+    }
+
+    /* Layout */
+    .app{display:flex;gap:24px;max-width:1400px;margin:0 auto;}
+    .sidebar{
+      width:240px;
+      padding:20px;
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start; /* shift menu up */
+      min-height:calc(100vh - 48px);
+    }
+    .main{flex:1;display:flex;flex-direction:column;gap:20px}
+
+    /* Glass styles */
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(10px);
+      border-radius:12px;
+      padding:16px;
+    }
+
+    /* Sidebar specifics */
+    .sidebar .brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .logo{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:700}
+    .brand-text{font-weight:700;font-size:18px}
+    .menu{display:flex;flex-direction:column;gap:12px;margin-top:0} /* removed top margin */
+    .menu-item{padding:10px;border-radius:10px;cursor:pointer;color:rgba(255,255,255,0.95);text-decoration:none;display:block}
+    .menu-item:hover{background:rgba(255,255,255,0.02)}
+    .menu-item.active{background:rgba(255,255,255,0.03);font-weight:600}
+
+    /* Sidebar footer */
+    .sidebar-footer{margin-top:auto;color:rgba(255,255,255,0.6);font-size:12px}
+
+    /* Header */
+    .header{display:flex;align-items:center;justify-content:space-between;padding:18px}
+    .header h1{margin:0;font-size:22px}
+    .header-right{display:flex;gap:12px;align-items:center}
+    .search input{padding:8px 12px;border-radius:10px;border:none;outline:none;width:220px;background:rgba(255,255,255,0.04);color:inherit}
+
+    /* Snapshot grid */
+    .snapshot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .card{padding:18px;border-radius:12px}
+    .card-title{font-size:13px;color:rgba(255,255,255,0.8)}
+    .card-value{font-size:16px;margin-top:8px;font-weight:700}
+
+    /* Matches */
+    .matches-section h2{margin:0 0 12px 0}
+    .matches-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .match-card{display:flex;flex-direction:column;align-items:center;padding:18px;gap:10px}
+    .ring-wrap{display:flex;align-items:center;justify-content:center}
+    .progress-ring{overflow:visible}
+    .ring-bg{stroke:rgba(255,255,255,0.06)}
+    .ring{stroke-linecap:round; transform-origin:center; transform:rotate(-90deg);}
+    .placeholder-blob{width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))}
+
+    /* Buttons */
+    .btn{margin-top:6px;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,0.45);color:white;border:none;cursor:pointer}
+    .pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.06);border:none;color:white;margin-right:8px;cursor:pointer}
+
+    /* Lower grid */
+    .lower-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start}
+    .radar-card{min-height:220px}
+    .radar-placeholder{height:160px;border-radius:8px;background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7)}
+    .right-card{padding:16px}
+
+    /* Badges */
+    .badges{margin-top:18px}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.03);margin-right:8px;margin-top:8px}
+
+    /* Footer */
+    .footer{text-align:center;color:rgba(255,255,255,0.6);padding:10px}
+
+    /* Theme toggle switch */
+    .switch{position:relative;display:inline-block;width:56px;height:30px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.12);transition:.3s;border-radius:30px}
+    .slider:before{position:absolute;content:"";height:22px;width:22px;left:4px;top:4px;background:white;border-radius:50%;transition:.3s}
+    .switch input:checked + .slider{background:linear-gradient(90deg,#ffd86f,#ff6b6b)}
+    .switch input:checked + .slider:before{transform:translateX(26px)}
+
+    /* Profile circle */
+    .profile{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:700}
+
+    /* Responsive */
+    @media (max-width: 1000px){
+      .snapshot-grid{grid-template-columns:repeat(2,1fr)}
+      .matches-grid{grid-template-columns:repeat(2,1fr)}
+      .matches-section h2{font-size:18px}
+      .app{flex-direction:column;padding:16px}
+      .sidebar{width:100%;display:flex;flex-direction:row;gap:12px;align-items:center;min-height:auto}
+      .menu{flex-direction:row}
+      .lower-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar glass">
+    <div class="brand">
+      <div class="logo">CP</div>
+      <div class="brand-text">CareerPath AI</div>
+    </div>
+    <nav class="menu" id="menu">
+      <a class="menu-item active" id="nav-dashboard">Dashboard</a>
+      <a class="menu-item" id="nav-skills">My Skills</a>
+      <a class="menu-item" id="nav-matches">Career Matches</a>
+      <a class="menu-item" id="nav-learning">Learning Path</a>
+      <a class="menu-item" id="nav-interview">Interview Prep</a>
+    </nav>
+    <div class="sidebar-footer">Powered by GenAI</div>
+  </aside>
+
+  <main class="main">
+    <!-- Dashboard Section -->
+    <section id="section-dashboard">
+      <header class="header glass">
+        <div class="header-left">
+          <h1 id="welcome">Hi, let’s shape your career today!</h1>
+        </div>
+        <div class="header-right">
+          <div class="search">
+            <input id="search" placeholder="Search roles or skills..." />
+          </div>
+          <div class="toggle">
+            <label class="switch">
+              <input id="themeToggle" type="checkbox" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="profile">J</div>
+        </div>
+      </header>
+
+      <section class="snapshot-grid" id="snapshots"></section>
+      <section class="matches-section">
+        <h2>Career Matches</h2>
+        <div class="matches-grid" id="matchesGrid"></div>
+      </section>
+      <section class="lower-grid">
+        <div class="glass radar-card">
+          <h3>Skill Gap Analysis</h3>
+          <canvas id="skillsRadar"></canvas>
+        </div>
+        <aside class="glass right-card">
+          <h3>Interview Prep</h3>
+          <p>Ask me a question for <strong id="goalRole">Data Scientist</strong> role</p>
+          <div class="pill-row">
+            <button class="pill">Technical</button>
+            <button class="pill">HR</button>
+            <button class="pill">Behavioral</button>
+          </div>
+          <div class="badges" id="badges">
+            <h4>Badges</h4>
+          </div>
+        </aside>
+      </section>
+    </section>
+
+    <!-- My Skills Section -->
+    <section id="section-skills" style="display:none;">
+      <h2>My Skills</h2>
+      <div id="skillsContent">
+        <p>Your skills will appear here.</p>
+      </div>
+    </section>
+
+    <!-- Career Matches Section -->
+    <section id="section-matches" style="display:none;">
+      <h2>Career Matches</h2>
+      <div id="matchesContent">
+        <p>Your career matches will appear here.</p>
+      </div>
+    </section>
+
+    <!-- Learning Path Section -->
+    <section id="section-learning" style="display:none;">
+      <h2>Learning Path</h2>
+      <div id="learningContent">
+        <p>Your learning path will appear here.</p>
+      </div>
+    </section>
+
+    <!-- Interview Prep Section -->
+    <section id="section-interview" style="display:none;">
+      <h2>Interview Prep</h2>
+      <div id="interviewContent">
+        <p>Your interview prep tools will appear here.</p>
+      </div>
+    </section>
+
+    <footer class="footer">© CareerPath AI</footer>
+  </main>
+</div>
+<script>
+// Sidebar navigation logic
+const menuLinks = document.querySelectorAll('.menu-item');
+const sections = [
+  document.getElementById('section-dashboard'),
+  document.getElementById('section-skills'),
+  document.getElementById('section-matches'),
+  document.getElementById('section-learning'),
+  document.getElementById('section-interview')
+];
+menuLinks.forEach((link, idx) => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    // Hide all sections
+    sections.forEach(sec => sec.style.display = 'none');
+    // Show the selected section
+    sections[idx].style.display = '';
+    // Update active class
+    menuLinks.forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+  });
+});
+  // global variable to store fetched data
+let globalData = null;
+
+// Load mock API and populate dashboard
+async function loadData(){
+  try{
+    const res = await fetch('mock-api.json');
+    const data = await res.json();
+    globalData = data;
+    populateDashboard(data);
+    populateSkills(data);
+    populateCareerMatches(data);
+    populateLearningPath(data);
+    populateInterviewPrep(data);
+  }catch(e){
+    console.error('Failed to load mock API', e);
+  }
+}
+
+// Populate Dashboard (existing logic)
+function populateDashboard(data){
+  // Welcome
+  const welcome = document.getElementById('welcome');
+  welcome.textContent = `Hi ${data.user.name} 👋, let's shape your career today!`;
+
+  // Goal role
+  document.getElementById('goalRole').textContent = data.user.careerGoal;
+
+  // Snapshots
+  const snapshots = document.getElementById('snapshots');
+  const snapshotItems = [
+    {title:'Skills Extracted', value: data.skills.map(s=>s.name).slice(0,3).join(', ') },
+    {title:'Top Match', value: `${data.careerMatches[0].role} (${data.careerMatches[0].match}%)`},
+    {title:'Skill Gaps', value: `${countGaps(data.skills)} Missing Skills`},
+    {title:'Next Step', value: 'Enroll in TensorFlow'}
+  ];
+  snapshots.innerHTML = '';
+  snapshotItems.forEach(it => {
+    const el = document.createElement('div');
+    el.className = 'card glass';
+    el.innerHTML = `<div class="card-title">${it.title}</div><div class="card-value">${it.value}</div>`;
+    snapshots.appendChild(el);
+  });
+
+  // Career matches grid (doughnut will show overall; also show cards)
+  const matchesGrid = document.getElementById('matchesGrid');
+  matchesGrid.innerHTML = '';
+  data.careerMatches.forEach((cm, idx) => {
+    const card = document.createElement('div');
+    card.className = 'match-card glass';
+    card.innerHTML = `
+      <div class="ring-wrap">
+        <canvas id="dough-${idx}" width="120" height="120"></canvas>
+      </div>
+      <div class="match-title">${cm.role}</div>
+      <button class="btn" id="roadmap-btn-${idx}">Show Roadmap</button>
+      <ul class="roadmap-list" id="roadmap-list-${idx}" style="display:none;">
+        ${cm.roadmap.map(step => `<li>${step}</li>`).join('')}
+      </ul>
+    `;
+    matchesGrid.appendChild(card);
+    // create small doughnut for each
+    const ctx = card.querySelector(`#dough-${idx}`).getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels:['Match','Remaining'],
+        datasets:[{
+          data:[cm.match, 100-cm.match],
+          backgroundColor:['#9c27b0','#2ed7e6'],
+          borderWidth:0
+        }]
+      },
+      options:{
+        cutout:'70%',
+        responsive:false,
+        plugins:{legend:{display:false}, tooltip:{enabled:false}}
+      }
+    });
+
+    // Toggle roadmap visibility
+    const btn = card.querySelector(`#roadmap-btn-${idx}`);
+    const roadmapList = card.querySelector(`#roadmap-list-${idx}`);
+    btn.addEventListener('click', () => {
+      if (roadmapList.style.display === 'none') {
+        roadmapList.style.display = 'block';
+        btn.textContent = 'Hide Roadmap';
+      } else {
+        roadmapList.style.display = 'none';
+        btn.textContent = 'Show Roadmap';
+      }
+    });
+  });
+
+  // Radar chart for skills
+  const radarCtx = document.getElementById('skillsRadar').getContext('2d');
+  const labels = data.skills.map(s=>s.name);
+  const values = data.skills.map(s=>s.level);
+  new Chart(radarCtx,{
+    type:'radar',
+    data:{
+      labels: labels,
+      datasets:[{
+        label: 'Your Skill Level',
+        data: values,
+        backgroundColor: 'rgba(156,39,176,0.4)',
+        borderColor: '#9c27b0',
+        pointBackgroundColor:'#2ed7e6'
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{
+        r:{beginAtZero:true, max:100, ticks:{display:false}}
+      },
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  // Badges
+  const badges = document.getElementById('badges');
+  data.badges.forEach(b=>{
+    const div = document.createElement('div');
+    div.className = 'badge';
+    div.innerHTML = `<img src="${b.icon}" width="36" height="36" alt="${b.title}" /> <div>${b.title}</div>`;
+    badges.appendChild(div);
+  });
+
+  // Set theme to dark by default
+  applyDark(true);
+}
+
+// Populate My Skills section
+function populateSkills(data){
+  const skillsContent = document.getElementById('skillsContent');
+  skillsContent.innerHTML = `
+    <ul>
+      ${data.skills.map(s => `<li>${s.name} - Level: ${s.level}</li>`).join('')}
+    </ul>
+  `;
+}
+
+// Populate Career Matches section
+function populateCareerMatches(data){
+  const matchesContent = document.getElementById('matchesContent');
+  matchesContent.innerHTML = data.careerMatches.map(cm => `
+    <div class="match-card glass">
+      <div class="match-title">${cm.role} (${cm.match}%)</div>
+      <button class="btn" onclick="toggleRoadmap(this)">Show Roadmap</button>
+      <ul class="roadmap-list" style="display:none;">
+        ${cm.roadmap.map(step => `<li>${step}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+}
+
+// Toggle roadmap for career matches section
+window.toggleRoadmap = function(btn){
+  const ul = btn.nextElementSibling;
+  if(ul.style.display === 'none'){
+    ul.style.display = 'block';
+    btn.textContent = 'Hide Roadmap';
+  }else{
+    ul.style.display = 'none';
+    btn.textContent = 'Show Roadmap';
+  }
+}
+
+// Populate Learning Path section
+function populateLearningPath(data){
+  const learningContent = document.getElementById('learningContent');
+  // Example: show a merged roadmap for the top match
+  if(data.careerMatches.length > 0){
+    const top = data.careerMatches[0];
+    learningContent.innerHTML = `
+      <h3>${top.role} Learning Path</h3>
+      <ol>
+        ${top.roadmap.map(step => `<li>${step}</li>`).join('')}
+      </ol>
+    `;
+  }else{
+    learningContent.innerHTML = '<p>No learning path available.</p>';
+  }
+}
+
+// Populate Interview Prep section
+function populateInterviewPrep(data){
+  const interviewContent = document.getElementById('interviewContent');
+  // Example questions for AI Engineer
+  const questions = {
+    technical: [
+      "Explain the difference between supervised and unsupervised learning.",
+      "How would you optimize a deep neural network?",
+      "What is overfitting and how can you prevent it?"
+    ],
+    hr: [
+      "Why do you want to work as an AI Engineer?",
+      "Describe a time you worked in a team.",
+      "How do you handle tight deadlines?"
+    ],
+    behavioral: [
+      "Tell me about a challenging AI project you completed.",
+      "Describe a time you failed and what you learned.",
+      "How do you stay updated with AI trends?"
+    ]
+  };
+
+  interviewContent.innerHTML = `
+    <p>Ask me a question for <strong>AI Engineer</strong> role</p>
+    <div class="pill-row">
+      <button class="pill" id="btn-tech">Technical</button>
+      <button class="pill" id="btn-hr">HR</button>
+      <button class="pill" id="btn-behavioral">Behavioral</button>
+    </div>
+    <div id="question-list" style="margin-top:1em;"></div>
+  `;
+
+  // Show technical questions by default
+  const questionList = document.getElementById('question-list');
+  function showQuestions(type) {
+    questionList.innerHTML = `<ul>${questions[type].map(q => `<li>${q}</li>`).join('')}</ul>`;
+  }
+  showQuestions('technical');
+
+  document.getElementById('btn-tech').onclick = () => showQuestions('technical');
+  document.getElementById('btn-hr').onclick = () => showQuestions('hr');
+  document.getElementById('btn-behavioral').onclick = () => showQuestions('behavioral');
+}
+
+function countGaps(skills){
+  // A very simple heuristic: anything below 60 is a gap
+  return skills.filter(s=>s.level < 60).length;
+}
+
+// Theme toggle
+const toggle = document.getElementById('themeToggle');
+function applyDark(isDark){
+  if(isDark){
+    document.body.style.background = 'linear-gradient(135deg, #0b0f1a, #1b1b35)';
+    document.body.style.color = '#e8eef8';
+    document.querySelectorAll('.glass').forEach(e=>{
+      e.style.background = 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))';
+      e.style.border = '1px solid rgba(255,255,255,0.06)';
+    });
+  } else {
+    document.body.style.background = 'linear-gradient(135deg, #6b2bd6, #2ed7e6)';
+    document.body.style.color = '#061124';
+    document.querySelectorAll('.glass').forEach(e=>{
+      e.style.background = 'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.04))';
+      e.style.border = '1px solid rgba(255,255,255,0.06)';
+    });
+  }
+}
+toggle.addEventListener('change',(ev)=> applyDark(ev.target.checked));
+
+// Dashboard search functionality
+const searchInput = document.getElementById('search');
+const headerRight = document.querySelector('.header-right');
+let searchResultsDiv = null;
+
+function showSearchResults(results) {
+  if (!searchResultsDiv) {
+    searchResultsDiv = document.createElement('div');
+    searchResultsDiv.id = 'search-results';
+    // Improved dropdown styling for visibility
+    searchResultsDiv.style.background = '#232946'; // dark background
+    searchResultsDiv.style.color = '#fff'; // white text
+    searchResultsDiv.style.position = 'absolute';
+    searchResultsDiv.style.top = '60px';
+    searchResultsDiv.style.left = '0';
+    searchResultsDiv.style.right = '0';
+    searchResultsDiv.style.zIndex = '100';
+    searchResultsDiv.style.padding = '1em';
+    searchResultsDiv.style.borderRadius = '8px';
+    searchResultsDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+    headerRight.appendChild(searchResultsDiv);
+  }
+  if (results.length === 0) {
+    searchResultsDiv.innerHTML = '<em style="color:#b8c1ec;">No results found.</em>';
+  } else {
+    searchResultsDiv.innerHTML = results.map(r => `<div style="padding:0.5em 0;border-bottom:1px solid #393e5c;">${r}</div>`).join('');
+  }
+  searchResultsDiv.style.display = 'block';
+}
+
+function hideSearchResults() {
+  if (searchResultsDiv) searchResultsDiv.style.display = 'none';
+}
+
+document.getElementById('search').addEventListener('input', function(e){
+  const query = e.target.value.trim().toLowerCase();
+  if (!query || !globalData) {
+    hideSearchResults();
+    return;
+  }
+  // Search in skills and roles
+  const skillMatches = globalData.skills
+    .filter(s => s.name.toLowerCase().includes(query))
+    .map(s => `Skill: <strong>${s.name}</strong>`);
+  const roleMatches = globalData.careerMatches
+    .filter(r => r.role.toLowerCase().includes(query))
+    .map(r => `Role: <strong>${r.role}</strong>`);
+  showSearchResults([...skillMatches, ...roleMatches]);
+});
+
+// Hide results when clicking outside
+document.addEventListener('click', function(e){
+  if (searchResultsDiv && !searchResultsDiv.contains(e.target) && e.target !== searchInput) {
+    hideSearchResults();
+  }
+});
+
+// Highlight the search input when focused for better visibility
+const searchBox = document.getElementById('search');
+searchBox.style.background = '#f7c873'; // yellow highlight
+searchBox.style.color = '#222';
+searchBox.style.border = '2px solid #232946';
+searchBox.style.outline = 'none';
+
+searchBox.addEventListener('focus', function() {
+  searchBox.style.background = '#ffe6a7'; // lighter yellow on focus
+  searchBox.style.border = '2px solid #f7c873';
+});
+searchBox.addEventListener('blur', function() {
+  searchBox.style.background = '#f7c873';
+  searchBox.style.border = '2px solid #232946';
+});
+
+
+// Initialize
+loadData();
+
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talent Sources</title>
+  <style>
+    :root {
+      --bg1: #0f0f2d;   /* dark base */
+      --bg2: #1a1a40;   /* slightly lighter dark */
+      --accent1: #6b2bd6; /* purple */
+      --accent2: #2ed7e6; /* cyan */
+      --textLight: #e8eef8;
+      --textMuted: #b0b5c9;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--textLight);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Navbar */
+    header {
+  display: flex;
+  align-items: center;
+  padding: 0 60px;
+  position: relative;
+  top: -60px;
+  z-index: 10;
+  gap: 40px; /* spacing between logo, nav, and button */
+}
+
+
+    .logo {
+      font-weight: bold;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      color: var(--accent2);
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 30px;
+      justify-content: center; /* Center menu items */
+      padding-left: 0;
+    }
+
+    nav {
+  flex: 1;
+  display: flex;
+  justify-content: center; /* Keep items centered */
+  margin-left: -60px; /* counteract logo padding */
+}
+
+
+    nav a {
+      text-decoration: none;
+      color: var(--textLight);
+      font-size: 0.95rem;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: var(--accent2);
+    }
+
+    .btn {
+      border: 1px solid var(--accent1);
+      background: transparent;
+      color: var(--textLight);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      text-decoration: none;   
+  display: inline-block;
+    }
+
+    .btn:hover {
+      background: var(--accent1);
+      color: white;
+    }
+
+    /* Hero Section */
+    .hero {
+  text-align: center;
+  padding: 0px 16px 0px 16px; /* Remove all vertical padding */
+  opacity: 0;
+  position: relative;
+  top: -80px; /* Move hero section up visually */
+  animation: fadeUp 1s ease forwards;
+    }
+
+    .hero .tagline {
+      font-size: 1.05rem;
+      color: var(--accent2);
+      border: 2px solid var(--accent1);
+      display: inline-block;
+      padding: 7px 22px;
+      border-radius: 24px;
+      margin-bottom: 15px;
+      font-weight: bold;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--textLight);
+  margin-bottom: 26px;
+  text-align: center;
+    }
+
+    /* Features */
+    .features {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  padding: 0 0 0 0; /* No top padding */
+  margin-top: -10px; /* Move features further up */
+    }
+
+    .card {
+  padding: 22px 14px;
+  border-radius: 16px;
+  width: 320px;
+  height: 320px;
+  border-radius: 32px;
+  text-align: center;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeUp 1s ease forwards;
+      transition: transform 0.3s ease;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .card:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .card h2 {
+  font-size: 1.5rem;
+  color: var(--accent2);
+  margin-bottom: 10px;
+  text-align: center;
+    }
+
+    .card p {
+  font-size: 0.92rem;
+  color: var(--textMuted);
+  max-width: 90%;
+  text-align: center;
+    }
+/* Middle card always bigger */
+.features .card:nth-child(2) {
+  transform: translateY(20px) scale(1.13);  /* combine translate and scale */
+  z-index: 2;
+}
+
+.features .card:nth-child(2):hover {
+  transform: translateY(12px) scale(1.16);  /* optional slight hover */
+}
+.features .card:nth-child(2) {
+  animation: fadeUpBig 1s ease forwards;
+}
+
+@keyframes fadeUpBig {
+  to { opacity: 1; transform: translateY(0) scale(1.13); }
+}
+
+    /* Bars */
+    .bars { display:flex; align-items:flex-end; gap:6px; margin-top:20px; }
+    .bar { width:8px; background: var(--accent1); border-radius:4px; animation: grow 1.2s ease forwards; }
+    .bar:nth-child(1){ height:20px; animation-delay:0.3s;}
+    .bar:nth-child(2){ height:40px; animation-delay:0.5s;}
+    .bar:nth-child(3){ height:55px; animation-delay:0.7s;}
+    .bar:nth-child(4){ height:35px; animation-delay:0.9s;}
+    .bar:nth-child(5){ height:60px; animation-delay:1.1s;}
+
+    @keyframes grow { from{transform:scaleY(0);} to{transform:scaleY(1);} }
+    @keyframes fadeUp { to{opacity:1; transform:translateY(0);} }
+
+    @media(max-width: 768px) {
+      header { flex-direction: column; gap: 15px; }
+      .hero h1 { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <header>
+  <div class="logo"><img src="assets/logo.png" alt="Logo" style="height:200px; width:auto; display:block;" /></div>
+    <nav>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About us</a></li>
+        <li><a href="ats.html">Resume Score</a></li>
+        <li><a href="#">Find Talent</a></li>
+      </ul>
+    </nav>
+  <a href="index.html" class="btn">Get Started</a>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="tagline">Gateway to</div>
+    <h1>Find Talent & <br> Career Excellence</h1>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="card">
+      <h2 class="counter" data-target="50">0</h2>
+      <p>Increase in job placement rates compared to traditional methods</p>
+  <img src="graph.png" alt="Card 1 Image" style="width:85%;height:auto;display:block;margin:20px auto 0 auto;max-height:180px;object-fit:contain;" />
+    </div>
+
+    <div class="card">
+      <h2 class="counter" data-target="1000">0</h2>
+      <p>Exclusive job listings</p>
+  <img src="briefcase.png" alt="Card 2 Image" style="width:85%;height:auto;display:block;margin:20px auto 0 auto;max-height:180px;object-fit:contain;" />
+    </div>
+
+    <div class="card">
+      <h2 class="counter" data-target="90">0</h2>
+      <p>Of Talent Sources users report improved job search results</p>
+  <img src="growth.png" alt="Card 3 Image" style="width:85%;height:auto;display:block;margin:20px auto 0 auto;max-height:180px;object-fit:contain;" />
+    </div>
+  </section>
+
+  <script>
+    const counters=document.querySelectorAll('.counter');
+    const animateCounters=()=>{counters.forEach(counter=>{
+      const target=+counter.getAttribute('data-target');
+      const duration=2000;
+      const stepTime=Math.max(Math.floor(duration/target),20);
+      let count=0;
+      const timer=setInterval(()=>{
+        count+=1;
+        if(count>=target){
+          counter.textContent=target+(target===1000?'+':'%');
+          clearInterval(timer);
+        } else {
+          counter.textContent=count;
+        }
+      },stepTime);
+    });};
+    const observer=new IntersectionObserver((entries,observer)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){animateCounters(); observer.disconnect();}
+      });
+    },{threshold:0.3});
+    observer.observe(document.querySelector('.features'));
+  </script>
+</body>
+</html>
